@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +29,8 @@ public class UserServiceImpl implements UserService {
         logger.info("Incoming data from frontend (UserRegistration form)");
         User user = mapToUser(userRegisterDTO);
         logger.info("Save the user in the database");
+        String userId = UUID.randomUUID().toString();
+        user.setId(userId);
         User savedUser = userRepository.save(user);
         logger.info("Mapping the saved User entity to UserDTO");
         return mapToUserDTO(savedUser);
