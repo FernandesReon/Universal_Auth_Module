@@ -1,6 +1,9 @@
 package com.reon.Universal_Auth_Module.service.impl;
 
+import com.reon.Universal_Auth_Module.exception.ResourceAlreadyExistsException;
+import com.reon.Universal_Auth_Module.exception.ResourceNotFoundException;
 import com.reon.Universal_Auth_Module.model.User;
+import com.reon.Universal_Auth_Module.model.dto.LoginRequest;
 import com.reon.Universal_Auth_Module.model.dto.UserDTO;
 import com.reon.Universal_Auth_Module.model.dto.UserRegisterDTO;
 import com.reon.Universal_Auth_Module.repository.UserRepository;
@@ -8,6 +11,7 @@ import com.reon.Universal_Auth_Module.service.UserService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,19 +22,28 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
+    private final PasswordEncoder encoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
     @Override
     @Transactional
     public UserDTO registerUser(UserRegisterDTO userRegisterDTO) {
+        if (userRepository.existsByEmail(userRegisterDTO.getEmail())){
+            throw new ResourceAlreadyExistsException("Email already in use.");
+        }
+        if (userRepository.existsByUsername(userRegisterDTO.getUsername())){
+            throw new ResourceAlreadyExistsException("Username already in use.");
+        }
         logger.info("Incoming data from frontend (UserRegistration form)");
         User user = mapToUser(userRegisterDTO);
         logger.info("Save the user in the database");
         String userId = UUID.randomUUID().toString();
         user.setId(userId);
+        user.setPassword(encoder.encode(user.getPassword()));
         User savedUser = userRepository.save(user);
         logger.info("Mapping the saved User entity to UserDTO");
         return mapToUserDTO(savedUser);
@@ -74,6 +87,17 @@ public class UserServiceImpl implements UserService {
     public UserDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email).
                 orElseThrow(() -> new RuntimeException("User with email : " + email + " not found!"));
+        return mapToUserDTO(user);
+    }
+
+    @Override
+    public UserDTO loginUser(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(
+                () -> new ResourceNotFoundException("User with email: " + loginRequest.getEmail() + "not found!")
+        );
+        if (!encoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
         return mapToUserDTO(user);
     }
 
