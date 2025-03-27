@@ -1,0 +1,2 @@
+## GET request to fetch all users from database
+GET http://localhost:8080/admin/allUsers

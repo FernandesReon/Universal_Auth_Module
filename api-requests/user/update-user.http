@@ -1,0 +1,7 @@
+## PUT request for updating an existing user
+PUT http://localhost:8080/user/update/fe1277c1-473a-403e-8b40-b28f71587898
+Content-Type: application/json
+
+{
+  "password": ""
+}

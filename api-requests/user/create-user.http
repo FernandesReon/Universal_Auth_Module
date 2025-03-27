@@ -1,0 +1,14 @@
+## POST request for creating a new user
+
+POST http://localhost:8080/user/register
+Content-Type: application/json
+
+{
+  "name": "Reon Fernandes",
+  "username": "alone_",
+  "email": "reonjervasiofernandes@example.com",
+  "password": "aloneHacker?/1258{Reon>",
+  "age": "24",
+  "gender": "Male",
+  "country": "India"
+}
