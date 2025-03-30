@@ -1,0 +1,3 @@
+# POST request
+@userId = 5c257838-2d66-4d7a-8fa2-927d0362823c
+POST http://localhost:8080/user/{{userId}}/promote-to-admin

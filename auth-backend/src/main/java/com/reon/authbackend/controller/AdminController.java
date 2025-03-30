@@ -22,7 +22,7 @@ public class AdminController {
         this.adminService = adminService;
     }
 
-    @GetMapping("/allUsers")
+    @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getUsers(){
         List<UserResponseDTO> users = adminService.getUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);

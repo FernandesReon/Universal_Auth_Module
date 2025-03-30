@@ -4,11 +4,13 @@ POST http://localhost:8080/user/register
 Content-Type: application/json
 
 {
-  "name": "Reon Fernandes",
-  "username": "alone_",
-  "email": "reonjervasiofernandes@example.com",
-  "password": "aloneHacker?/1258{Reon>",
-  "age": "24",
+  "name": "Noah Wilson",
+  "username": "noah_24",
+  "email": "noahwilson@example.com",
+  "password": "helloNoah?",
   "gender": "Male",
-  "country": "India"
+  "age": "25",
+  "country": "Canada",
+  "address": "Toronto",
+  "phoneNumber": "6543210987"
 }

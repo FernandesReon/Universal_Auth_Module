@@ -35,7 +35,7 @@ public class UserRegisterDTO {
     @NotBlank(
             groups = CreateValidationGroup.class,
             message = "Password is required")
-    @Size(min = 16, max = 64, message = "Password has to be minimum of 16 characters")
+    @Size(min = 10, max = 64, message = "Password has to be minimum of 16 characters")
     private String password;
 
     private String gender;

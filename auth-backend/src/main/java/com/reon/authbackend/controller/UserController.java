@@ -3,6 +3,10 @@ package com.reon.authbackend.controller;
 import com.reon.authbackend.dto.LoginDTO;
 import com.reon.authbackend.dto.UserRegisterDTO;
 import com.reon.authbackend.dto.UserResponseDTO;
+import com.reon.authbackend.exception.UserNotFoundException;
+import com.reon.authbackend.jwt.JwtService;
+import com.reon.authbackend.model.Role;
+import com.reon.authbackend.service.impl.AdminServiceImpl;
 import com.reon.authbackend.service.impl.UserServiceImpl;
 import com.reon.authbackend.validator.CreateValidationGroup;
 import com.reon.authbackend.validator.UpdateValidationGroup;
@@ -24,10 +28,13 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserServiceImpl userService;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public UserController(UserServiceImpl userService, AuthenticationManager authenticationManager) {
+    public UserController(UserServiceImpl userService,
+                          JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userService = userService;
+        this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -58,19 +65,17 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // Login using JWT
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> loginUser (@RequestBody LoginDTO loginDTO){
-        logger.info("Login Controller :: fetching info for user with email: " + loginDTO.getEmail());
-
+    public String loginViaJwt(@RequestBody LoginDTO loginDTO){
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.getEmail(),
-                        loginDTO.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        UserResponseDTO loggedInUser = userService.accessUser(loginDTO);
-        logger.info("User loggedIn");
-        return ResponseEntity.ok().body(loggedInUser);
+        if (authentication.isAuthenticated()){
+            return jwtService.generateToken(loginDTO.getEmail());
+        }
+        else {
+            throw new UserNotFoundException("Invalid user request !");
+        }
     }
 }

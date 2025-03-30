@@ -1,5 +1,6 @@
 package com.reon.authbackend.configuration;
 
+import com.reon.authbackend.jwt.JwtAuthFilter;
 import com.reon.authbackend.service.impl.CustomSecurityConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,16 +16,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
 @EnableWebSecurity
 public class SecurityConfigurations {
     private final CustomSecurityConfig securityConfig;
+    private final JwtAuthFilter jwtAuthFilter;
     private final OAuthSuccessHandler successHandler;
 
-    public SecurityConfigurations(CustomSecurityConfig securityConfig, OAuthSuccessHandler successHandler) {
+    public SecurityConfigurations(CustomSecurityConfig securityConfig, JwtAuthFilter jwtAuthFilter, OAuthSuccessHandler successHandler) {
         this.securityConfig = securityConfig;
+        this.jwtAuthFilter = jwtAuthFilter;
         this.successHandler = successHandler;
     }
 
@@ -32,17 +36,17 @@ public class SecurityConfigurations {
     public SecurityFilterChain filterChain (HttpSecurity security) throws Exception {
         security.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/register", "/user/login").permitAll()
-                        .requestMatchers("/user/update/", "/user/delete/").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/register","/user/login").permitAll()
+                        .requestMatchers("/user/update/**", "/user/delete/**").authenticated()
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
-                .oauth2Login(oauth ->
-                        oauth
-                                .loginPage("/user/login")
-                                .successHandler(successHandler))
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/user/login")
+                        .successHandler(successHandler));
         return security.build();
     }
 

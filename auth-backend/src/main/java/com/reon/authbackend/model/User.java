@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Entity
 public class User implements UserDetails {
-//    @Serial
-//    private static final long serialVersionUID = 1L;
-
     @Id
     private String id;
 
@@ -65,7 +62,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toList());
     }
 
