@@ -19,6 +19,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +29,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     private final UserServiceImpl userService;
+    private final AdminServiceImpl adminService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public UserController(UserServiceImpl userService,
+    public UserController(UserServiceImpl userService, AdminServiceImpl adminService,
                           JwtService jwtService, AuthenticationManager authenticationManager) {
         this.userService = userService;
+        this.adminService = adminService;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
@@ -72,10 +75,18 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword()));
 
         if (authentication.isAuthenticated()){
-            return jwtService.generateToken(loginDTO.getEmail());
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return jwtService.generateToken(loginDTO.getEmail(), userDetails.getAuthorities());
         }
         else {
             throw new UserNotFoundException("Invalid user request !");
         }
+    }
+
+    // Important Endpoint
+    @PostMapping("/{userId}/promote-to-admin")
+    public ResponseEntity<UserResponseDTO> promoteToAdmin(@PathVariable String userId){
+        UserResponseDTO updatedUser = adminService.updateUserRole(userId, Role.ADMIN);
+        return ResponseEntity.ok(updatedUser);
     }
 }

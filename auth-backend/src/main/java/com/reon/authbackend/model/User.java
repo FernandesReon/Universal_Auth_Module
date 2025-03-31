@@ -48,8 +48,8 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = EnumSet.of(Role.USER);
 
-    private boolean accountEnabled = false;
-    private boolean emailVerified = false;
+    private boolean accountEnabled = true;
+    private boolean emailVerified = true;
     private boolean phoneVerified = false;
 
     @Enumerated(EnumType.STRING)
@@ -62,7 +62,7 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" +role.name()))
                 .collect(Collectors.toList());
     }
 
@@ -84,5 +84,10 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.accountEnabled;
+    }
+
+    @Override
+    public String getUsername(){
+        return this.email;
     }
 }

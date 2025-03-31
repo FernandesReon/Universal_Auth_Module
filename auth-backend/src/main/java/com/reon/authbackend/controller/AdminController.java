@@ -48,11 +48,4 @@ public class AdminController {
         UserResponseDTO user = adminService.getUserByUsername(username);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
-
-    // Important Endpoint
-    @PostMapping("/{userId}/promote-to-admin")
-    public ResponseEntity<UserResponseDTO> promoteToAdmin(@PathVariable String userId){
-        UserResponseDTO updatedUser = adminService.updateUserRole(userId, Role.ADMIN);
-        return ResponseEntity.ok(updatedUser);
-    }
 }

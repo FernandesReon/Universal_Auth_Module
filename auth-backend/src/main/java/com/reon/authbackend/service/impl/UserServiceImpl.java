@@ -62,12 +62,12 @@ public class UserServiceImpl implements UserService {
         user.setRoles(EnumSet.of(Role.USER));
 
         // Set emailVerified and accountEnabled to false at registration
-        user.setAccountEnabled(false);
-        user.setEmailVerified(false);
+//        user.setAccountEnabled(false);
+//        user.setEmailVerified(false);
         User saveUser = userRepository.save(user);
 
         // Create and send verification token
-        emailVerificationService.createAndSendVerificationToken(user);
+//        emailVerificationService.createAndSendVerificationToken(user);
 
         return UserMapper.responseToUser(saveUser);
     }

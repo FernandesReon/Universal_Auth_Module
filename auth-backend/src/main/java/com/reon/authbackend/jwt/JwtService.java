@@ -6,14 +6,17 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtService {
@@ -49,12 +52,16 @@ public class JwtService {
 
     public Boolean validateToken(String token, UserDetails userDetails){
         final String username = extractEmail(token);
+        System.out.println(username + " " + userDetails.getUsername());
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     // 1
-    public String generateToken(String email){
+    public String generateToken(String email, Collection <? extends GrantedAuthority> authorities){
         Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
         return createToken(claims, email);
     }
 
